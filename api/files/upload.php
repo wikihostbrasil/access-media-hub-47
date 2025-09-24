@@ -135,6 +135,94 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $db->commit();
 
+            // Send email notifications to users who have access to this file
+            require_once '../config/email.php';
+            $emailService = new EmailService();
+            
+            // Get uploader name
+            $uploader_query = "SELECT full_name FROM profiles WHERE user_id = :user_id";
+            $uploader_stmt = $db->prepare($uploader_query);
+            $uploader_stmt->bindParam(":user_id", $user_id);
+            $uploader_stmt->execute();
+            $uploader_data = $uploader_stmt->fetch(PDO::FETCH_ASSOC);
+            $uploaded_by_name = $uploader_data ? $uploader_data['full_name'] : 'Sistema';
+            
+            // Get users who should receive notifications
+            $notification_users = [];
+            
+            if (!empty($permissions)) {
+                foreach ($permissions as $permission) {
+                    if (!empty($permission['user_id'])) {
+                        // Direct user permission
+                        $user_query = "SELECT u.email, p.full_name, p.receive_notifications 
+                                      FROM users u 
+                                      JOIN profiles p ON u.id = p.user_id 
+                                      WHERE u.id = :user_id AND p.receive_notifications = 1";
+                        $user_stmt = $db->prepare($user_query);
+                        $user_stmt->bindParam(":user_id", $permission['user_id']);
+                        $user_stmt->execute();
+                        while ($user = $user_stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $notification_users[$user['email']] = $user['full_name'];
+                        }
+                    }
+                    
+                    if (!empty($permission['group_id'])) {
+                        // Group permission
+                        $group_users_query = "SELECT DISTINCT u.email, p.full_name 
+                                             FROM users u 
+                                             JOIN profiles p ON u.id = p.user_id 
+                                             JOIN user_groups ug ON u.id = ug.user_id 
+                                             WHERE ug.group_id = :group_id AND p.receive_notifications = 1";
+                        $group_stmt = $db->prepare($group_users_query);
+                        $group_stmt->bindParam(":group_id", $permission['group_id']);
+                        $group_stmt->execute();
+                        while ($user = $group_stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $notification_users[$user['email']] = $user['full_name'];
+                        }
+                    }
+                    
+                    if (!empty($permission['category_id'])) {
+                        // Category permission - notify all users for now (you can customize this logic)
+                        $cat_users_query = "SELECT u.email, p.full_name 
+                                           FROM users u 
+                                           JOIN profiles p ON u.id = p.user_id 
+                                           WHERE p.receive_notifications = 1 AND p.role IN ('admin', 'operator', 'user')";
+                        $cat_stmt = $db->prepare($cat_users_query);
+                        $cat_stmt->execute();
+                        while ($user = $cat_stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $notification_users[$user['email']] = $user['full_name'];
+                        }
+                    }
+                }
+            }
+            
+            // Get categories for this file (if any)
+            $categories = [];
+            foreach ($permissions as $permission) {
+                if (!empty($permission['category_id'])) {
+                    $cat_query = "SELECT name FROM categories WHERE id = :category_id";
+                    $cat_stmt = $db->prepare($cat_query);
+                    $cat_stmt->bindParam(":category_id", $permission['category_id']);
+                    $cat_stmt->execute();
+                    $cat_data = $cat_stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($cat_data) {
+                        $categories[] = $cat_data['name'];
+                    }
+                }
+            }
+            
+            // Send notifications
+            foreach ($notification_users as $email => $name) {
+                if ($email !== $user_data['email']) { // Don't send notification to uploader
+                    $emailSent = $emailService->sendFileNotification($email, $name, $title, $uploaded_by_name, $categories);
+                    if ($emailSent) {
+                        error_log("File notification sent to: $email");
+                    } else {
+                        error_log("Failed to send file notification to: $email");
+                    }
+                }
+            }
+
             http_response_code(201);
             echo json_encode(array("message" => "Arquivo enviado com sucesso", "file_id" => $file_id));
         } catch (Exception $e) {

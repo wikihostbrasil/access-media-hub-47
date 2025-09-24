@@ -51,8 +51,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $update_stmt->bindParam(":email", $email);
             $update_stmt->execute();
 
-            // Here you would send the email with the reset link
-            // For now, just return success
+            // Get user full name for email
+            $name_query = "SELECT p.full_name FROM profiles p JOIN users u ON p.user_id = u.id WHERE u.email = :email";
+            $name_stmt = $db->prepare($name_query);
+            $name_stmt->bindParam(":email", $email);
+            $name_stmt->execute();
+            $profile = $name_stmt->fetch(PDO::FETCH_ASSOC);
+            $full_name = $profile ? $profile['full_name'] : 'Usuário';
+
+            // Send password reset email
+            require_once '../config/email.php';
+            $emailService = new EmailService();
+            $emailSent = $emailService->sendPasswordReset($email, $reset_token, $full_name);
+            
+            if ($emailSent) {
+                error_log("Password reset email sent to: $email");
+            } else {
+                error_log("Failed to send password reset email to: $email");
+            }
+
             http_response_code(200);
             echo json_encode(array("message" => "Se o email existir, um link de recuperação foi enviado"));
         } else {

@@ -53,6 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $db->commit();
 
+        // Send welcome email
+        require_once '../config/email.php';
+        $emailService = new EmailService();
+        $emailSent = $emailService->sendWelcomeEmail($email, $full_name);
+        
+        if ($emailSent) {
+            error_log("Welcome email sent to: $email");
+        } else {
+            error_log("Failed to send welcome email to: $email");
+        }
+
         http_response_code(201);
         echo json_encode(array("message" => "Usuário criado com sucesso. Verifique seu email."));
     } catch (Exception $e) {
