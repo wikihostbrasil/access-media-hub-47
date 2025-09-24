@@ -259,7 +259,7 @@ const Files = () => {
                       {isAudioFile(file.title, file.file_type) ? (
                         <Volume2 className="h-4 w-4 mt-1 text-primary" />
                       ) : (
-                        <FileIcon className="h-4 w-4 mt-1" />
+                        <FileIcon className="h-4 w-4 mt-1 text-primary" />
                       )}
                       <div className="flex-1 space-y-2">
                         <div className="flex-1">
