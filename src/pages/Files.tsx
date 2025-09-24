@@ -106,9 +106,9 @@ const Files = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Gerenciar Arquivos</h1>
+          <h1 className="text-3xl font-bold">Arquivos</h1>
           <p className="text-muted-foreground">
-            Gerencie e organize todos os arquivos disponíveis para download
+            Arquivos disponíveis para download
           </p>
         </div>
         {user?.role !== 'user' && (
