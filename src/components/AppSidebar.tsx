@@ -64,13 +64,13 @@ export function AppSidebar() {
         <Link to="/" className="flex items-center justify-center">
           {isCollapsed ? (
             <img 
-              src={theme === 'dark' ? "https://dummyimage.com/50x50/ddd/006DD9&text=L2" : "https://dummyimage.com/50x50/ddd/006DD9&text=L"} 
+              src={theme === 'dark' ? "logo-icone-150x150" : "logo-icone-150x150"} 
               alt="Logo"
               className="w-4 h-4"
             />
           ) : (
             <img 
-              src={theme === 'dark' ? "https://dummyimage.com/200x50/ddd/006DD9&text=Logo2" : "https://dummyimage.com/200x50/ddd/006DD9&text=Logo"} 
+              src={theme === 'dark' ? "logo-white.png" : "logo.png"} 
               alt="Logo"
               className="h-8 w-auto max-w-full"
             />
