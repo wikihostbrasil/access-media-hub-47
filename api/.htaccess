@@ -1,0 +1,12 @@
+# Ensure Authorization header is passed to PHP
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Forward the Authorization header to PHP (HTTP_AUTHORIZATION)
+  RewriteCond %{HTTP:Authorization} .+
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+# Fallback for environments without mod_rewrite
+<IfModule !mod_rewrite.c>
+  SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>

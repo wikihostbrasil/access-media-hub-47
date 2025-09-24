@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+:root {
+    /* Enhanced color palette with better contrast */
+    --background: 210 20% 96%;
+    --foreground: 220 15% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 20%;
+
+    --primary: 211 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 211 100% 40%;
+
+    --secondary: 210 25% 88%;
+    --secondary-foreground: 220 15% 25%;
+    --secondary-hover: 210 25% 82%;
+
+    --muted: 210 20% 92%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 195 100% 95%;
+    --accent-foreground: 195 100% 25%;
+
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 210 20% 85%;
+    --input: 210 20% 90%;
+    --ring: 211 100% 45%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar colors */
+    --sidebar-background: 220 15% 97%;
+    --sidebar-foreground: 220 15% 25%;
+    --sidebar-primary: 211 100% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 25% 92%;
+    --sidebar-accent-foreground: 220 15% 25%;
+    --sidebar-border: 210 20% 88%;
+    --sidebar-ring: 211 100% 45%;
+  }
+
+  .dark {
+    /* Enhanced dark mode with better contrast */
+    --background: 220 15% 8%;
+    --foreground: 210 20% 92%;
+
+    --card: 220 15% 10%;
+    --card-foreground: 210 20% 92%;
+
+    --popover: 220 15% 10%;
+    --popover-foreground: 210 20% 92%;
+
+    --primary: 211 100% 55%;
+    --primary-foreground: 220 15% 8%;
+    --primary-hover: 211 100% 60%;
+
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 210 20% 85%;
+    --secondary-hover: 220 15% 18%;
+
+    --muted: 220 15% 12%;
+    --muted-foreground: 210 10% 65%;
+
+    --accent: 195 100% 12%;
+    --accent-foreground: 195 100% 85%;
+
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 70% 50%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 15%;
+    --ring: 211 100% 55%;
+
+    /* Dark sidebar colors */
+    --sidebar-background: 220 15% 6%;
+    --sidebar-foreground: 210 20% 85%;
+    --sidebar-primary: 211 100% 55%;
+    --sidebar-primary-foreground: 220 15% 8%;
+    --sidebar-accent: 220 15% 12%;
+    --sidebar-accent-foreground: 210 20% 85%;
+    --sidebar-border: 220 15% 15%;
+    --sidebar-ring: 211 100% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-medium;
+  }
+
+  /* Enhanced typography and sizes - adjustable here */
+  html {
+    font-size: 16px; /* Base font size - change to 18px or 20px for larger */
+  }
+
+  /* Button size enhancement */
+  .btn-enhanced {
+    @apply min-h-[2.75rem] px-6 text-base;
+  }
+
+  /* Input size enhancement */
+  .input-enhanced {
+    @apply min-h-[2.75rem] text-base;
+  }
+
+  /* Responsive utilities */
+  .container-responsive {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+}
+
+/* Audio Player Progress Bar with proper contrast */
+.audio-progress [role="slider"] {
+  background: hsl(var(--primary));
+}
+
+.audio-progress [data-orientation="horizontal"] {
+  background: hsl(var(--muted-foreground) / 0.3);
+  height: 4px;
+}
+
+.audio-progress [data-orientation="horizontal"] > span[data-orientation="horizontal"] {
+  background: hsl(var(--primary));
+}
