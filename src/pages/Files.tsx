@@ -148,6 +148,7 @@ const Files = () => {
               <TableRow>
                 <TableHead>Arquivo</TableHead>
                 <TableHead>Tamanho</TableHead>
+                <TableHead>Tipo</TableHead>
                 {user?.role === 'admin' && <TableHead>Downloads</TableHead>}
                 <TableHead>Enviado por</TableHead>
                 {user?.role === 'admin' && <TableHead>Data Upload</TableHead>}
@@ -173,6 +174,11 @@ const Files = () => {
                       </div>
                     </TableCell>
                     <TableCell>{formatFileSize(file.file_size)}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {getFileExtension(file.title)} {/* Exibe a extensão do arquivo */}
+                      </Badge>
+                    </TableCell>                    
                     {user?.role === 'admin' && (
                       <TableCell>
                         <span className="font-medium">0</span>
