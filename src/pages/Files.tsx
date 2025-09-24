@@ -290,11 +290,21 @@ const Files = () => {
                       </TableCell>
                     )}
                     <TableCell>
-                      <div className="text-xs">
+                      {/*<div className="text-xs">
                         {file.start_date && (
                           <div>{format(new Date(file.start_date), "dd/MM/yyyy", { locale: ptBR })}</div>
                         )}
-                      </div>
+                      </div>*/}
+
+                      <div className="text-xs">
+                        {file.is_permanent ? (
+                          <div>-</div>
+                        ) : file.end_date ? (
+                          <div>{format(new Date(file.start_date), "dd/MM/yyyy", { locale: ptBR })}</div>
+                        ) : (
+                          <div>-</div>
+                        )}
+                      </div>                      
                     </TableCell>
                     <TableCell>
                       <div className="text-xs">
