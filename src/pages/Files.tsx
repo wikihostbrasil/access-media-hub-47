@@ -80,8 +80,15 @@ const Files = () => {
     try {
       // Record download in backend
       await apiClient.recordDownload(file.id);
-      // Open file URL directly (assumes file_url is accessible)
-      window.open(file.file_url, "_blank");
+      
+      // Create download link to force download instead of opening
+      const link = document.createElement('a');
+      link.href = file.file_url;
+      link.download = file.title || 'download';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (e) {
       console.error('Download error:', e);
     }
@@ -171,7 +178,7 @@ const Files = () => {
                         <span className="font-medium">0</span>
                       </TableCell>
                     )}
-                    <TableCell>Usuário</TableCell>
+                    <TableCell>{file.uploaded_by_name || 'Usuário'}</TableCell>
                     {user?.role === 'admin' && (
                       <TableCell>
                         {format(new Date(file.created_at), "dd/MM/yyyy", { locale: ptBR })}

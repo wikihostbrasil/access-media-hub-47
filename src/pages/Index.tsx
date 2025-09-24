@@ -2,6 +2,8 @@ import { useApiAuth } from "@/hooks/useApiAuth";
 import { useStats } from "@/hooks/useApiStats";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Files, Users, FolderOpen, Download } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const Index = () => {
   const { user } = useApiAuth();
@@ -109,6 +111,32 @@ const Index = () => {
           </div>
         </CardContent>
       </Card>
+
+      {user?.role === 'user' && stats?.recent_files && stats.recent_files.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Novos Arquivos</CardTitle>
+            <CardDescription>
+              Últimos arquivos disponibilizados para você
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {stats.recent_files.map((file: any) => (
+                <div key={file.id} className="flex items-center justify-between p-2 rounded border">
+                  <div className="flex items-center gap-2">
+                    <Files className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">{file.title}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(file.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
