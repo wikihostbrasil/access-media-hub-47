@@ -360,8 +360,8 @@ const Files = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                  {isAudioFile(file.title, file.file_type) && (
                   {/*
+                  {isAudioFile(file.title, file.file_type) && (
                     <TableRow>
                       <TableCell colSpan={user?.role === 'admin' ? 10 : 8} className="p-0 border-0">
                         <div className="px-4 pb-2">
@@ -369,8 +369,8 @@ const Files = () => {
                         </div>
                       </TableCell>
                     </TableRow>
-                  */}
                   )}
+                  */}
                   
                 </Fragment>
               ))}
