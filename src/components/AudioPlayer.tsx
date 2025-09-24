@@ -9,9 +9,10 @@ interface AudioPlayerProps {
   fileUrl: string;
   fileName: string;
   fileId: string;
+  variant?: 'full' | 'inline' | 'progress-only';
 }
 
-export const AudioPlayer = ({ fileUrl, fileName, fileId }: AudioPlayerProps) => {
+export const AudioPlayer = ({ fileUrl, fileName, fileId, variant = 'full' }: AudioPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -124,6 +125,58 @@ export const AudioPlayer = ({ fileUrl, fileName, fileId }: AudioPlayerProps) => 
     );
   }
 
+  // Render inline variant (just play/pause button)
+  if (variant === 'inline') {
+    return (
+      <>
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          data-file-id={fileId}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => {
+            setIsPlaying(false);
+            setCurrentlyPlaying(null);
+          }}
+          preload="metadata"
+        />
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={togglePlayPause}
+          className="h-8 w-8 p-0"
+        >
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </Button>
+      </>
+    );
+  }
+
+  // Render progress-only variant (progress bar + time)
+  if (variant === 'progress-only') {
+    return (
+      <div className="space-y-2 px-2 py-1">
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <Slider
+              value={[currentTime]}
+              max={duration || 100}
+              step={1}
+              onValueChange={handleSeek}
+              className="cursor-pointer audio-progress"
+            />
+          </div>
+          
+          <div className="text-xs text-muted-foreground min-w-[80px]">
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Full variant (original layout)
   return (
     <div className="bg-muted p-4 rounded-lg space-y-3">
       <audio

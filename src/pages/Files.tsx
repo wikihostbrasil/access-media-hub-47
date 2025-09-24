@@ -218,6 +218,9 @@ const Files = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
+                        {isAudioFile(file.title, file.file_type) && (
+                          <AudioPlayer fileUrl={file.file_url} fileName={file.title} fileId={file.id} variant="inline" />
+                        )}
                         {user?.role === 'admin' && (
                           <Button
                             size="sm"
@@ -262,10 +265,8 @@ const Files = () => {
 
                   {isAudioFile(file.title, file.file_type) && (
                     <TableRow className="bg-muted/20">
-                      <TableCell colSpan={user?.role === 'admin' ? 8 : 6} className="pt-0">
-                        <div className="mt-2">
-                          <AudioPlayer fileUrl={file.file_url} fileName={file.title} fileId={file.id} />
-                        </div>
+                      <TableCell colSpan={user?.role === 'admin' ? 9 : 7} className="pt-0">
+                        <AudioPlayer fileUrl={file.file_url} fileName={file.title} fileId={file.id} variant="progress-only" />
                       </TableCell>
                     </TableRow>
                   )}
@@ -273,7 +274,7 @@ const Files = () => {
               ))}
               {filteredFiles.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={user?.role === 'admin' ? 8 : 6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={user?.role === 'admin' ? 9 : 7} className="text-center py-8 text-muted-foreground">
                     Nenhum arquivo encontrado
                   </TableCell>
                 </TableRow>
