@@ -65,11 +65,6 @@ const Files = () => {
     return audioExtensions.includes(extension || '') || mimeType?.startsWith('audio/');
   };
 
-  const getFileType = (filename: string) => {
-    const ext = filename.split('.').pop()?.toUpperCase();
-    return ext || 'FILE';
-  };  
-
   const handleShowDownloads = (fileId: string, fileName: string) => {
     setSelectedFileId(fileId);
     setSelectedFileName(fileName);
@@ -181,7 +176,7 @@ const Files = () => {
                     <TableCell>{formatFileSize(file.file_size)}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">
-                        {getFileType(download.file_url || download.file_title || '')}
+                        {getFileExtension(download.file_url || download.file_title || '')}
                       </Badge>
                     </TableCell>
                     {user?.role === 'admin' && (
