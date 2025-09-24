@@ -105,12 +105,12 @@ const Files = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        {/*<div>
-          <h1 className="text-3xl font-bold">Arquivos</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Download de Arquivos</h1>
           <p className="text-muted-foreground">
             Arquivos disponíveis para download
           </p>
-        </div>*/}
+        </div>
         {user?.role !== 'user' && (
           <div className="flex gap-2">
             <Button onClick={() => setOpenUpload(true)}>
