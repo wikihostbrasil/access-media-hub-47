@@ -72,7 +72,7 @@ function AuthenticatedApp() {
           <header className="h-16 flex items-center justify-between border-b px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
-              {/*<h1 className="text-xl font-semibold">Painel de Downloads</h1>*/}
+              <h1 className="text-xl font-semibold">Painel de Downloads</h1>
             </div>
             
             <div className="flex items-center gap-4">

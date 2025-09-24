@@ -106,9 +106,9 @@ const Files = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Download de Arquivos</h1>
+          <h1 className="text-3xl font-bold">Downloads</h1>
           <p className="text-muted-foreground">
-            Arquivos disponíveis para download
+            Mídias e Conteúdos para download
           </p>
         </div>
         {user?.role !== 'user' && (
