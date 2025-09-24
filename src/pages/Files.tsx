@@ -193,10 +193,13 @@ const Files = () => {
                     </TableCell>
                     <TableCell>
                       <div className="text-xs">
-                        {file.end_date && (
+                        {file.is_permanent ? (
+                          <div className="text-green-600">Permanente</div>
+                        ) : file.end_date ? (
                           <div>{format(new Date(file.end_date), "dd/MM/yyyy", { locale: ptBR })}</div>
+                        ) : (
+                          <div>-</div>
                         )}
-                        {file.is_permanent && <div className="text-green-600">Permanente</div>}
                       </div>
                     </TableCell>                    
                     <TableCell>

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Files, Users, FolderOpen, Settings, Download, BarChart3 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Files, Users, FolderOpen, Settings, Download, BarChart3, Home } from "lucide-react";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import { useApiAuth } from "@/hooks/useApiAuth";
+import { useTheme } from "next-themes";
 
 import {
   Sidebar,
@@ -25,6 +26,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const { user } = useApiAuth();
+  const { theme } = useTheme();
 
   // Use role from user object directly
   const userRole = user?.role || 'user';
@@ -36,6 +38,7 @@ export function AppSidebar() {
   
 
   const menuItems = [
+    { title: "Dashboard", url: "/", icon: Home, roles: ['admin', 'operator', 'user'] },
     { title: "Arquivos", url: "/files", icon: Files, roles: ['admin', 'operator', 'user'] },
     { title: "Usuários", url: "/users", icon: Users, roles: ['admin', 'operator'] },
     { title: "Grupos", url: "/groups", icon: FolderOpen, roles: ['admin', 'operator'] },
@@ -58,19 +61,21 @@ export function AppSidebar() {
     >
       {/* Logo Section */}
       <div className="p-4 border-b border-sidebar-border flex justify-center items-center">
-        {isCollapsed ? (
-          <img 
-            src="https://dummyimage.com/50x50/ddd/006DD9&text=L" 
-            alt="Logo"
-            className="w-4 h-4"
-          />
-        ) : (
-          <img 
-            src="https://dummyimage.com/200x50/ddd/006DD9&text=Logo" 
-            alt="Logo"
-            className="h-8 w-auto max-w-full"
-          />
-        )}
+        <Link to="/" className="flex items-center justify-center">
+          {isCollapsed ? (
+            <img 
+              src={theme === 'dark' ? "https://dummyimage.com/50x50/ddd/006DD9&text=L2" : "https://dummyimage.com/50x50/ddd/006DD9&text=L"} 
+              alt="Logo"
+              className="w-4 h-4"
+            />
+          ) : (
+            <img 
+              src={theme === 'dark' ? "https://dummyimage.com/200x50/ddd/006DD9&text=Logo2" : "https://dummyimage.com/200x50/ddd/006DD9&text=Logo"} 
+              alt="Logo"
+              className="h-8 w-auto max-w-full"
+            />
+          )}
+        </Link>
       </div>
 
       <SidebarContent>
