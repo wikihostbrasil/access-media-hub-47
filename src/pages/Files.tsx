@@ -176,7 +176,7 @@ const Files = () => {
                     <TableCell>{formatFileSize(file.file_size)}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">
-                        {getFileExtension(file.title)} {/* Exibe a extensão do arquivo */}
+                        {getFileExtension(file.file_url)} {/* Exibe a extensão do arquivo */}
                       </Badge>
                     </TableCell>                    
                     {user?.role === 'admin' && (
