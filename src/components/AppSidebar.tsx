@@ -64,7 +64,7 @@ export function AppSidebar() {
         <Link to="/" className="flex items-center justify-center">
           {isCollapsed ? (
             <img 
-              src={theme === 'dark' ? "assets/logo-icone-150x150" : "assets/logo-icone-150x150"} 
+              src={theme === 'dark' ? "assets/logo-icone-150x150.png" : "assets/logo-icone-150x150.png"} 
               alt="Logo"
               className="w-4 h-4"
             />
