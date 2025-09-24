@@ -56,14 +56,16 @@ export default function AccessLogs() {
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
-      case 'login_success':
+      case 'successful_login':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'login_failed':
+      case 'failed_login':
         return <XCircle className="h-4 w-4 text-red-500" />;
       case 'logout':
         return <LogOut className="h-4 w-4 text-blue-500" />;
-      case 'unauthorized_access':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case 'rate_limit_exceeded':
+        return <AlertTriangle className="h-4 w-4 text-orange-500" />;
+      case 'invalid_login_attempt':
+        return <XCircle className="h-4 w-4 text-red-400" />;
       default:
         return <AlertTriangle className="h-4 w-4 text-gray-500" />;
     }
@@ -71,14 +73,16 @@ export default function AccessLogs() {
 
   const getEventBadge = (eventType: string) => {
     switch (eventType) {
-      case 'login_success':
+      case 'successful_login':
         return <Badge variant="default" className="bg-green-100 text-green-800">Login Sucesso</Badge>;
-      case 'login_failed':
+      case 'failed_login':
         return <Badge variant="destructive">Login Falhou</Badge>;
       case 'logout':
         return <Badge variant="secondary">Logout</Badge>;
-      case 'unauthorized_access':
-        return <Badge variant="outline" className="border-yellow-500 text-yellow-700">Acesso Negado</Badge>;
+      case 'rate_limit_exceeded':
+        return <Badge variant="outline" className="border-orange-500 text-orange-700">Rate Limit</Badge>;
+      case 'invalid_login_attempt':
+        return <Badge variant="destructive" className="bg-red-100 text-red-800">Tentativa Inválida</Badge>;
       default:
         return <Badge variant="outline">{eventType}</Badge>;
     }
