@@ -19,6 +19,7 @@ CREATE TABLE profiles (
     id VARCHAR(36) PRIMARY KEY,
     user_id VARCHAR(36) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
+    company VARCHAR(255),
     role ENUM('admin', 'operator', 'user') DEFAULT 'user',
     receive_notifications BOOLEAN DEFAULT TRUE,
     whatsapp VARCHAR(20),

@@ -39,6 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     }
 
     $full_name = trim($data['full_name']);
+    $company = isset($data['company']) ? trim($data['company']) : null;
     $whatsapp = isset($data['whatsapp']) ? trim($data['whatsapp']) : null;
     $receive_notifications = isset($data['receive_notifications']) ? (bool)$data['receive_notifications'] : true;
 
@@ -56,23 +57,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
             // Update existing profile
             $query = "UPDATE profiles SET 
                         full_name = :full_name, 
+                        company = :company,
                         whatsapp = :whatsapp, 
                         receive_notifications = :receive_notifications,
                         updated_at = NOW()
                       WHERE user_id = :user_id";
             $stmt = $db->prepare($query);
             $stmt->bindParam(":full_name", $full_name);
+            $stmt->bindParam(":company", $company);
             $stmt->bindParam(":whatsapp", $whatsapp);
             $stmt->bindParam(":receive_notifications", $receive_notifications, PDO::PARAM_BOOL);
             $stmt->bindParam(":user_id", $user_id);
             $stmt->execute();
         } else {
             // Create new profile
-            $insert_query = "INSERT INTO profiles (user_id, full_name, whatsapp, receive_notifications, role, active, created_at, updated_at) 
-                           VALUES (:user_id, :full_name, :whatsapp, :receive_notifications, 'user', 1, NOW(), NOW())";
+            $insert_query = "INSERT INTO profiles (user_id, full_name, company, whatsapp, receive_notifications, role, active, created_at, updated_at) 
+                           VALUES (:user_id, :full_name, :company, :whatsapp, :receive_notifications, 'user', 1, NOW(), NOW())";
             $insert_stmt = $db->prepare($insert_query);
             $insert_stmt->bindParam(":user_id", $user_id);
             $insert_stmt->bindParam(":full_name", $full_name);
+            $insert_stmt->bindParam(":company", $company);
             $insert_stmt->bindParam(":whatsapp", $whatsapp);
             $insert_stmt->bindParam(":receive_notifications", $receive_notifications, PDO::PARAM_BOOL);
             $insert_stmt->execute();

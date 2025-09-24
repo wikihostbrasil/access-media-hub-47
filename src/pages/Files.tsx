@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileIcon, Download, Search, Plus, Upload, BarChart3, Edit, Trash2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { FileIcon, Download, Search, Plus, Upload, BarChart3, Edit, Trash2, Volume2 } from "lucide-react";
 import { useFiles, useDeleteFile } from "@/hooks/useApiFiles";
 import { DownloadDetailsModal } from "@/components/DownloadDetailsModal";
+import { DeleteConfirmDialog } from "@/components/dialogs/DeleteConfirmDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { UploadFileDialog } from "@/components/dialogs/UploadFileDialog";
@@ -23,6 +25,12 @@ const Files = () => {
   const [selectedFileName, setSelectedFileName] = useState("");
   const [openEdit, setOpenEdit] = useState(false);
   const [editingFile, setEditingFile] = useState<{ id: string; title: string; description?: string | null; start_date?: string | null; end_date?: string | null; status?: string | null; is_permanent?: boolean | null } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; fileId: string; fileName: string }>({
+    isOpen: false,
+    fileId: "",
+    fileName: ""
+  });
+  const [isSearching, setIsSearching] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useApiAuth();
@@ -39,6 +47,17 @@ const Files = () => {
     const q = params.get("q");
     if (q) setSearchTerm(q);
   }, [location.search]);
+
+  // Simulate search loading when term changes
+  useEffect(() => {
+    if (searchTerm) {
+      setIsSearching(true);
+      const timer = setTimeout(() => setIsSearching(false), 300);
+      return () => clearTimeout(timer);
+    } else {
+      setIsSearching(false);
+    }
+  }, [searchTerm]);
 
   const filteredFiles = files?.filter(file =>
     file.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -70,10 +89,13 @@ const Files = () => {
     setSelectedFileName(fileName);
   };
 
-  const handleDeleteFile = async (fileId: string, fileName: string) => {
-    if (confirm(`Tem certeza que deseja excluir o arquivo "${fileName}"?`)) {
-      deleteFile.mutate(fileId);
-    }
+  const handleDeleteFile = (fileId: string, fileName: string) => {
+    setDeleteConfirm({ isOpen: true, fileId, fileName });
+  };
+
+  const confirmDeleteFile = async () => {
+    deleteFile.mutate(deleteConfirm.fileId);
+    setDeleteConfirm({ isOpen: false, fileId: "", fileName: "" });
   };
 
   const handleDirectDownload = async (file: { id: string; file_url: string; title?: string }) => {
@@ -96,8 +118,49 @@ const Files = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-lg">Carregando arquivos...</div>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Downloads</h1>
+            <p className="text-muted-foreground">
+              Mídias e Conteúdos para download
+            </p>
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Biblioteca de Arquivos</CardTitle>
+            <CardDescription>
+              Carregando arquivos...
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2 mb-4">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Skeleton className="h-10 max-w-sm" />
+            </div>
+
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
+                  <Skeleton className="h-4 w-4" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-[200px] mb-2" />
+                    <Skeleton className="h-3 w-[150px]" />
+                  </div>
+                  <Skeleton className="h-4 w-[60px]" />
+                  <Skeleton className="h-4 w-[80px]" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-8 w-8" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -159,11 +222,45 @@ const Files = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredFiles.map((file) => (
+              {isSearching && (
+                <>
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <TableRow key={`skeleton-${i}`}>
+                      <TableCell className="flex items-start gap-2">
+                        <Skeleton className="h-4 w-4 mt-1" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-[180px]" />
+                          <Skeleton className="h-3 w-[120px]" />
+                        </div>
+                      </TableCell>
+                      <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-[50px]" /></TableCell>
+                      {user?.role === 'admin' && <TableCell><Skeleton className="h-4 w-[30px]" /></TableCell>}
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                      {user?.role === 'admin' && <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>}
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-[60px]" /></TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Skeleton className="h-8 w-8" />
+                          <Skeleton className="h-8 w-8" />
+                          <Skeleton className="h-8 w-8" />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </>
+              )}
+              {!isSearching && filteredFiles.map((file) => (
                 <Fragment key={file.id}>
                   <TableRow>
                     <TableCell className="flex items-start gap-2">
-                      <FileIcon className="h-4 w-4 mt-1" />
+                      {isAudioFile(file.title, file.file_type) ? (
+                        <Volume2 className="h-4 w-4 mt-1 text-primary" />
+                      ) : (
+                        <FileIcon className="h-4 w-4 mt-1" />
+                      )}
                       <div className="flex-1 space-y-2">
                         <div className="flex-1">
                           <div className="font-medium">{file.title}</div>
@@ -173,11 +270,6 @@ const Files = () => {
                             </div>
                           )}
                         </div>
-                        {isAudioFile(file.title, file.file_type) && (
-                          <div className="w-full">
-                            <AudioPlayer fileUrl={file.file_url} fileName={file.title} fileId={file.id} variant="progress-only" />
-                          </div>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell>{formatFileSize(file.file_size)}</TableCell>
@@ -214,7 +306,7 @@ const Files = () => {
                           <div>-</div>
                         )}
                       </div>
-                    </TableCell>                    
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
                         <Badge variant={file.status === 'active' ? 'default' : 'secondary'}>
@@ -260,7 +352,6 @@ const Files = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleDeleteFile(file.id, file.title)}
-                              
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -269,9 +360,19 @@ const Files = () => {
                       </div>
                     </TableCell>
                   </TableRow>
+                  
+                  {isAudioFile(file.title, file.file_type) && (
+                    <TableRow>
+                      <TableCell colSpan={user?.role === 'admin' ? 10 : 8} className="p-0 border-0">
+                        <div className="px-4 pb-2">
+                          <AudioPlayer fileUrl={file.file_url} fileName={file.title} fileId={file.id} variant="progress-only" />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </Fragment>
               ))}
-              {filteredFiles.length === 0 && (
+              {!isSearching && filteredFiles.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={user?.role === 'admin' ? 9 : 7} className="text-center py-8 text-muted-foreground">
                     Nenhum arquivo encontrado
@@ -296,6 +397,14 @@ const Files = () => {
       <UploadFileDialog open={openUpload} onOpenChange={setOpenUpload} />
       <CreateCategoryDialog open={openCategory} onOpenChange={setOpenCategory} />
       <EditFileDialog open={openEdit} onOpenChange={setOpenEdit} file={editingFile} />
+      
+      <DeleteConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, fileId: "", fileName: "" })}
+        onConfirm={confirmDeleteFile}
+        title={deleteConfirm.fileName}
+        isLoading={deleteFile.isPending}
+      />
     </div>
   );
 };

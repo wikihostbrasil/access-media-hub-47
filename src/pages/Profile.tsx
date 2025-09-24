@@ -15,6 +15,7 @@ interface UserProfile {
   id: string;
   user_id: string;
   full_name: string;
+  company?: string;
   receive_notifications: boolean;
   whatsapp?: string;
   created_at: string;
@@ -27,6 +28,7 @@ export default function Profile() {
   
   const [formData, setFormData] = useState({
     full_name: "",
+    company: "",
     whatsapp: "",
     receive_notifications: true,
   });
@@ -44,6 +46,7 @@ export default function Profile() {
           
           setFormData({
             full_name: profile.full_name || "",
+            company: profile.company || "",
             whatsapp: profile.whatsapp || "",
             receive_notifications: profile.receive_notifications ?? true,
           });
@@ -52,6 +55,7 @@ export default function Profile() {
           // Fallback to user data from token
           setFormData({
             full_name: user.full_name || "",
+            company: "",
             whatsapp: "",
             receive_notifications: true,
           });
@@ -147,6 +151,20 @@ export default function Profile() {
               <p className="text-sm text-muted-foreground">
                 O email não pode ser alterado através do perfil
               </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="company">Empresa</Label>
+              {loadingProfile ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input
+                  id="company"
+                  value={formData.company}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
+                  placeholder="Nome da sua empresa"
+                />
+              )}
             </div>
 
             <div className="space-y-2">

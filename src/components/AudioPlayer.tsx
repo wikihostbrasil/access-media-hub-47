@@ -90,6 +90,8 @@ export const AudioPlayer = ({ fileUrl, fileName, fileId, variant = 'full' }: Aud
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
+      // Initialize volume
+      audioRef.current.volume = volume[0] / 100;
     }
   };
 
@@ -179,23 +181,36 @@ export const AudioPlayer = ({ fileUrl, fileName, fileId, variant = 'full' }: Aud
   // Render progress-only variant (progress bar + time)
   if (variant === 'progress-only') {
     return (
-      <div className="space-y-2 px-2 py-1">
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <Slider
-              value={[currentTime]}
-              max={duration || 100}
-              step={1}
-              onValueChange={handleSeek}
-              className="cursor-pointer audio-progress"
-            />
-          </div>
-          
-          <div className="text-xs text-muted-foreground min-w-[80px]">
-            {formatTime(currentTime)} / {formatTime(duration)}
+      <>
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          data-file-id={fileId}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={() => {
+            setCurrentlyPlaying(null);
+          }}
+          preload="metadata"
+        />
+        <div className="space-y-2 px-2 py-1">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <Slider
+                value={[currentTime]}
+                max={duration || 100}
+                step={1}
+                onValueChange={handleSeek}
+                className="cursor-pointer audio-progress"
+              />
+            </div>
+            
+            <div className="text-xs text-muted-foreground min-w-[80px]">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
