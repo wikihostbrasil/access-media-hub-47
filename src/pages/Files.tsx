@@ -259,7 +259,7 @@ const Files = () => {
                       {isAudioFile(file.title, file.file_type) ? (
                         <Volume2 className="h-4 w-4 mt-1 text-primary" />
                       ) : (
-                        <FileIcon className="h-4 w-4 mt-1 text-primary" />
+                        <FileIcon className="h-4 w-4 mt-1" />
                       )}
                       <div className="flex-1 space-y-2">
                         <div className="flex-1">
@@ -299,7 +299,7 @@ const Files = () => {
                     <TableCell>
                       <div className="text-xs">
                         {file.is_permanent ? (
-                          <div className="text-green-600">Permanente</div>
+                          <Badge variant="default" className="bg-green-100 text-green-800">Permanente</Badge>
                         ) : file.end_date ? (
                           <div>{format(new Date(file.end_date), "dd/MM/yyyy", { locale: ptBR })}</div>
                         ) : (
