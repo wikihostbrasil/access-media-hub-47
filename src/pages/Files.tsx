@@ -162,13 +162,20 @@ const Files = () => {
               {filteredFiles.map((file) => (
                 <Fragment key={file.id}>
                   <TableRow>
-                    <TableCell className="flex items-center gap-2">
-                      <FileIcon className="h-4 w-4" />
-                      <div className="flex-1">
-                        <div className="font-medium">{file.title}</div>
-                        {file.description && (
-                          <div className="text-sm text-muted-foreground">
-                            {file.description}
+                    <TableCell className="flex items-start gap-2">
+                      <FileIcon className="h-4 w-4 mt-1" />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex-1">
+                          <div className="font-medium">{file.title}</div>
+                          {file.description && (
+                            <div className="text-sm text-muted-foreground">
+                              {file.description}
+                            </div>
+                          )}
+                        </div>
+                        {isAudioFile(file.title, file.file_type) && (
+                          <div className="w-full">
+                            <AudioPlayer fileUrl={file.file_url} fileName={file.title} fileId={file.id} variant="progress-only" />
                           </div>
                         )}
                       </div>
@@ -262,14 +269,6 @@ const Files = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-
-                  {isAudioFile(file.title, file.file_type) && (
-                    <TableRow className="bg-muted/20">
-                      <TableCell colSpan={user?.role === 'admin' ? 9 : 7} className="pt-0">
-                        <AudioPlayer fileUrl={file.file_url} fileName={file.title} fileId={file.id} variant="progress-only" />
-                      </TableCell>
-                    </TableRow>
-                  )}
                 </Fragment>
               ))}
               {filteredFiles.length === 0 && (

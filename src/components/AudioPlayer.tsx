@@ -13,7 +13,6 @@ interface AudioPlayerProps {
 }
 
 export const AudioPlayer = ({ fileUrl, fileName, fileId, variant = 'full' }: AudioPlayerProps) => {
-  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState([50]);
@@ -21,11 +20,38 @@ export const AudioPlayer = ({ fileUrl, fileName, fileId, variant = 'full' }: Aud
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const { currentlyPlaying, stopOthers, setCurrentlyPlaying } = useGlobalAudioPlayer();
+  
+  // Check if this player is currently playing
+  const isPlaying = currentlyPlaying === fileId;
 
   // Use file URL directly (assuming it's accessible)
   useEffect(() => {
     setAudioUrl(fileUrl);
   }, [fileUrl]);
+
+  // Listen to audio events to sync with global state
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handlePlay = () => {
+      setCurrentlyPlaying(fileId);
+    };
+
+    const handlePause = () => {
+      if (currentlyPlaying === fileId) {
+        setCurrentlyPlaying(null);
+      }
+    };
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+
+    return () => {
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+    };
+  }, [fileId, currentlyPlaying, setCurrentlyPlaying]);
 
   // Track play when audio is played (not download)
   const trackPlay = async () => {
@@ -41,14 +67,12 @@ export const AudioPlayer = ({ fileUrl, fileName, fileId, variant = 'full' }: Aud
 
     if (isPlaying) {
       audioRef.current.pause();
-      setIsPlaying(false);
       setCurrentlyPlaying(null);
     } else {
       // Stop any other audio players
       stopOthers(fileId);
       
       audioRef.current.play();
-      setIsPlaying(true);
       
       // Track as play when first played
       if (currentTime === 0) {
@@ -136,7 +160,6 @@ export const AudioPlayer = ({ fileUrl, fileName, fileId, variant = 'full' }: Aud
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}
           onEnded={() => {
-            setIsPlaying(false);
             setCurrentlyPlaying(null);
           }}
           preload="metadata"
@@ -186,7 +209,6 @@ export const AudioPlayer = ({ fileUrl, fileName, fileId, variant = 'full' }: Aud
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={() => {
-          setIsPlaying(false);
           setCurrentlyPlaying(null);
         }}
         preload="metadata"
