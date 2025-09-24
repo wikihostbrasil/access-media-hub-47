@@ -258,6 +258,8 @@ const Files = () => {
                         )}
                       </div>
                     </TableCell>
+                  </TableRow>
+
                   {isAudioFile(file.title, file.file_type) && (
                     <TableRow className="bg-muted/20">
                       <TableCell colSpan={user?.role === 'admin' ? 8 : 6} className="pt-0">
@@ -267,8 +269,6 @@ const Files = () => {
                       </TableCell>
                     </TableRow>
                   )}
-                  </TableRow>
-
                 </Fragment>
               ))}
               {filteredFiles.length === 0 && (
