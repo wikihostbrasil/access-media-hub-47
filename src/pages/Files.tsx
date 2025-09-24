@@ -65,6 +65,11 @@ const Files = () => {
     return audioExtensions.includes(extension || '') || mimeType?.startsWith('audio/');
   };
 
+  const getFileType = (filename: string) => {
+    const ext = filename.split('.').pop()?.toUpperCase();
+    return ext || 'FILE';
+  };  
+
   const handleShowDownloads = (fileId: string, fileName: string) => {
     setSelectedFileId(fileId);
     setSelectedFileName(fileName);
