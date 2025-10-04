@@ -72,7 +72,19 @@ class ApiClient {
         return null;
       }
       
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const peek = await response.text().catch(() => '');
+        console.error('[Refresh] Non-JSON response from server. Content-Type:', contentType, 'Body peek:', peek.slice(0, 80));
+        return null;
+      }
+
+      const data = await response.json().catch(() => null as any);
+      if (!data || !data.access_token) {
+        console.error('[Refresh] JSON parsed but access_token missing');
+        return null;
+      }
+
       console.log('[Refresh] Success! New token received');
       this.setAccessToken(data.access_token);
       this.refreshAttempts = 0; // Reset counter on success
