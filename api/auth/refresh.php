@@ -29,9 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     try {
         // Validar refresh token no banco
-        $query = "SELECT rt.*, p.email, p.role, p.full_name 
+        $query = "SELECT rt.*, u.email, p.role, p.full_name 
                   FROM refresh_tokens rt
                   JOIN profiles p ON rt.user_id = p.user_id
+                  JOIN users u ON rt.user_id = u.user_id
                   WHERE rt.token_hash = :token_hash 
                   AND rt.revoked = 0 
                   AND rt.expires_at > NOW()";
@@ -41,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($stmt->rowCount() === 0) {
             // Verificar se o token existe mas está revogado ou expirado
-            $check_query = "SELECT rt.*, p.email FROM refresh_tokens rt 
-                           LEFT JOIN profiles p ON rt.user_id = p.user_id 
+            $check_query = "SELECT rt.*, u.email FROM refresh_tokens rt 
+                           LEFT JOIN users u ON rt.user_id = u.user_id 
                            WHERE rt.token_hash = :token_hash";
             $check_stmt = $db->prepare($check_query);
             $check_stmt->bindParam(":token_hash", $token_hash);
