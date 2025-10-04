@@ -67,7 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 
                 // Setar refresh token em cookie HttpOnly
-                $is_secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+                // Detectar HTTPS mesmo atrás de proxy (Cloudflare)
+                $is_secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+                          || $_SERVER['SERVER_PORT'] == 443
+                          || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
                 
                 // Extrair domínio raiz para subdomínios (ex: .domain.net)
                 $host = $_SERVER['HTTP_HOST'] ?? '';
