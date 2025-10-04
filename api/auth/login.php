@@ -49,7 +49,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if (password_verify($password, $user['password_hash'])) {
                 $securityLogger->logSecurityEvent('successful_login', $ip, $user['user_id'], $user['email']);
-                $token = $jwt->createToken($user['user_id'], $user['email'], $user['role']);
+                
+                // Criar access token (curto - 15 min)
+                $access_token = $jwt->createAccessToken($user['user_id'], $user['email'], $user['role']);
+                
+                // Criar refresh token (longo - 7 dias)
+                $refresh_token = $jwt->createRefreshToken();
+                $token_hash = hash('sha256', $refresh_token);
+                $expires_at = date('Y-m-d H:i:s', time() + (7 * 24 * 60 * 60));
+                
+                // Armazenar refresh token no banco
+                try {
+                    $insert_query = "INSERT INTO refresh_tokens (user_id, token_hash, expires_at, ip_address, user_agent) 
+                                   VALUES (:user_id, :token_hash, :expires_at, :ip, :user_agent)";
+                    $insert_stmt = $db->prepare($insert_query);
+                    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+                    $insert_stmt->bindParam(":user_id", $user['user_id']);
+                    $insert_stmt->bindParam(":token_hash", $token_hash);
+                    $insert_stmt->bindParam(":expires_at", $expires_at);
+                    $insert_stmt->bindParam(":ip", $ip);
+                    $insert_stmt->bindParam(":user_agent", $user_agent);
+                    $insert_stmt->execute();
+                } catch (Exception $e) {
+                    error_log("Failed to store refresh token: " . $e->getMessage());
+                }
+                
+                // Setar refresh token em cookie HttpOnly
+                $is_secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+                setcookie(
+                    'refresh_token',
+                    $refresh_token,
+                    [
+                        'expires' => time() + (7 * 24 * 60 * 60),
+                        'path' => '/',
+                        'domain' => '',
+                        'secure' => $is_secure,
+                        'httponly' => true,
+                        'samesite' => 'Lax'
+                    ]
+                );
                 
                 http_response_code(200);
                 echo json_encode(array(
@@ -59,7 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         "full_name" => $user['full_name'],
                         "role" => $user['role']
                     ),
-                    "access_token" => $token
+                    "access_token" => $access_token
+                    // refresh_token NÃO é enviado no JSON - apenas no cookie HttpOnly
                 ));
             } else {
                 $securityLogger->logSecurityEvent('failed_login', $ip, $user['user_id'], 'Wrong password: ' . $user['email']);

@@ -13,11 +13,11 @@ interface ApiResponse<T> {
 
 class ApiClient {
   private baseUrl: string;
-  private token: string | null = null;
+  private accessToken: string | null = null; // Apenas em memória - NÃO usa localStorage
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
-    this.token = localStorage.getItem('access_token');
+    // NÃO ler de localStorage - token vive apenas em memória
   }
 
   private getHeaders(): HeadersInit {
@@ -25,31 +25,67 @@ class ApiClient {
       'Content-Type': 'application/json',
     };
     
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
     }
     
     return headers;
   }
 
-  setToken(token: string | null) {
-    this.token = token;
-    if (token) {
-      localStorage.setItem('access_token', token);
-    } else {
-      localStorage.removeItem('access_token');
+  setAccessToken(token: string | null) {
+    this.accessToken = token; // SEM localStorage
+  }
+
+  getAccessToken(): string | null {
+    return this.accessToken;
+  }
+
+  // Renovar access token usando refresh token (cookie HttpOnly)
+  async refreshAccessToken(): Promise<string | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/refresh.php`, {
+        method: 'POST',
+        credentials: 'include', // Envia cookies automaticamente
+      });
+      
+      if (!response.ok) return null;
+      
+      const data = await response.json();
+      this.setAccessToken(data.access_token);
+      return data.access_token;
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
+      return null;
     }
   }
 
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    const response = await fetch(url, {
+    
+    let response = await fetch(url, {
       ...options,
+      credentials: 'include', // Sempre incluir cookies
       headers: {
         ...this.getHeaders(),
         ...options.headers,
       },
     });
+
+    // Se 401, tentar refresh automático
+    if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
+      const newToken = await this.refreshAccessToken();
+      if (newToken) {
+        // Retry com novo token
+        response = await fetch(url, {
+          ...options,
+          credentials: 'include',
+          headers: {
+            ...this.getHeaders(),
+            ...options.headers,
+          },
+        });
+      }
+    }
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Network error' }));
@@ -66,7 +102,7 @@ class ApiClient {
       body: JSON.stringify({ email, password }),
     });
     
-    this.setToken(response.access_token);
+    this.setAccessToken(response.access_token);
     return response;
   }
 
@@ -77,9 +113,17 @@ class ApiClient {
     });
   }
 
-  signOut() {
-    this.setToken(null);
-    return Promise.resolve();
+  async signOut() {
+    // Chamar backend para revogar refresh token
+    try {
+      await this.request('/auth/logout.php', {
+        method: 'POST',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
+    this.setAccessToken(null);
   }
 
   // Files methods
@@ -89,12 +133,13 @@ class ApiClient {
 
   async uploadFile(formData: FormData) {
     const headers: HeadersInit = {};
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
     }
 
     const response = await fetch(`${this.baseUrl}/files/upload.php`, {
       method: 'POST',
+      credentials: 'include',
       headers,
       body: formData,
     });

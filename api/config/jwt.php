@@ -13,10 +13,11 @@ class JWTHandler {
     public function __construct() {
         $this->secret_key = $_ENV['JWT_SECRET'] ?? 'arquivo_manager_jwt_secret_key_default';
         $this->issued_at = time();
-        $this->expiration_time = $this->issued_at + (24 * 60 * 60); // 24 hours - can be adjusted in /api/config/jwt.php line 16
+        $this->expiration_time = $this->issued_at + (15 * 60); // 15 minutes for access token
     }
 
-    public function createToken($user_id, $email, $role) {
+    // Access token (curta duração - 15 minutos)
+    public function createAccessToken($user_id, $email, $role) {
         $payload = array(
             "iss" => $this->issuer,
             "aud" => $this->audience,
@@ -30,6 +31,16 @@ class JWTHandler {
         );
 
         return JWT::encode($payload, $this->secret_key, 'HS256');
+    }
+
+    // Refresh token (longa duração - 7 dias)
+    public function createRefreshToken() {
+        return bin2hex(random_bytes(32));
+    }
+
+    // Legacy method - mantido para compatibilidade
+    public function createToken($user_id, $email, $role) {
+        return $this->createAccessToken($user_id, $email, $role);
     }
 
     public function validateToken($token) {
