@@ -4,6 +4,8 @@ include_once '../config/database.php';
 include_once '../config/jwt.php';
 include_once '../config/security.php';
 
+header('Content-Type: application/json; charset=utf-8');
+
 $database = new Database();
 $db = $database->getConnection();
 $jwt = new JWTHandler();
@@ -59,6 +61,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $securityLogger->logSecurityEvent('invalid_refresh_token', $ip, null, 'Token not found in database | IP: ' . $ip);
                 error_log("[Refresh] Token not found in database | IP: $ip | Hash: " . substr($token_hash, 0, 16) . "...");
             }
+
+            // Limpar cookie inválido para evitar loop de erros antes do login
+            $is_secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
+                      || $_SERVER['SERVER_PORT'] == 443
+                      || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+            $host = $_SERVER['HTTP_HOST'] ?? '';
+            $domain_parts = explode('.', $host);
+            $cookie_domain = (count($domain_parts) >= 2) ? '.' . implode('.', array_slice($domain_parts, -2)) : '';
+            setcookie(
+                'refresh_token',
+                '',
+                [
+                    'expires' => time() - 3600,
+                    'path' => '/',
+                    'domain' => $cookie_domain,
+                    'secure' => $is_secure,
+                    'httponly' => true,
+                    'samesite' => 'Lax'
+                ]
+            );
+            error_log("[Refresh] Cleared invalid refresh_token cookie | Domain: $cookie_domain | Secure: " . ($is_secure ? 'yes' : 'no'));
             
             http_response_code(401);
             echo json_encode(array("error" => "Refresh token inválido ou expirado"));
