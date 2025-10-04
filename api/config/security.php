@@ -37,7 +37,17 @@ class RateLimiter {
         $this->db = $database;
     }
     
-    public function checkLimit($ip, $endpoint, $maxAttempts = 5, $timeWindow = 300) {
+    // Rate limiting rigoroso para tentativas de login com falha
+    public function checkLoginLimit($ip, $maxAttempts = 5, $timeWindow = 300) {
+        return $this->checkLimit($ip, 'login_failed', $maxAttempts, $timeWindow);
+    }
+    
+    // Rate limiting permissivo para refresh tokens (evitar bloqueios por F5)
+    public function checkRefreshLimit($ip, $maxAttempts = 30, $timeWindow = 300) {
+        return $this->checkLimit($ip, 'refresh_token', $maxAttempts, $timeWindow);
+    }
+    
+    private function checkLimit($ip, $endpoint, $maxAttempts, $timeWindow) {
         // Limpar tentativas antigas
         $stmt = $this->db->prepare("DELETE FROM rate_limits WHERE endpoint = ? AND created_at < DATE_SUB(NOW(), INTERVAL ? SECOND)");
         $stmt->execute([$endpoint, $timeWindow]);

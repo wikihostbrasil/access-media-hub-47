@@ -14,6 +14,9 @@ interface ApiResponse<T> {
 class ApiClient {
   private baseUrl: string;
   private accessToken: string | null = null; // Apenas em memória - NÃO usa localStorage
+  private refreshInProgress = false; // Evitar múltiplas tentativas simultâneas
+  private refreshAttempts = 0; // Contador de tentativas de refresh
+  private readonly MAX_REFRESH_ATTEMPTS = 3; // Máximo de tentativas por sessão
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -42,25 +45,53 @@ class ApiClient {
 
   // Renovar access token usando refresh token (cookie HttpOnly)
   async refreshAccessToken(): Promise<string | null> {
+    // Evitar múltiplas chamadas simultâneas
+    if (this.refreshInProgress) {
+      console.log('[Refresh] Already in progress, skipping...');
+      return null;
+    }
+    
+    // Limitar tentativas por sessão
+    if (this.refreshAttempts >= this.MAX_REFRESH_ATTEMPTS) {
+      console.log('[Refresh] Max attempts reached, user must login again');
+      return null;
+    }
+    
+    this.refreshInProgress = true;
+    this.refreshAttempts++;
+    
     try {
+      console.log(`[Refresh] Attempting token refresh (attempt ${this.refreshAttempts}/${this.MAX_REFRESH_ATTEMPTS})...`);
       const response = await fetch(`${this.baseUrl}/auth/refresh.php`, {
         method: 'POST',
         credentials: 'include', // Envia cookies automaticamente
       });
       
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.error('[Refresh] Failed with status:', response.status);
+        return null;
+      }
       
       const data = await response.json();
+      console.log('[Refresh] Success! New token received');
       this.setAccessToken(data.access_token);
+      this.refreshAttempts = 0; // Reset counter on success
       return data.access_token;
     } catch (error) {
-      console.error('Failed to refresh token:', error);
+      console.error('[Refresh] Error:', error);
       return null;
+    } finally {
+      this.refreshInProgress = false;
     }
+  }
+  
+  resetRefreshAttempts() {
+    this.refreshAttempts = 0;
   }
 
   async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    const isRetry = (options as any).isRetry;
     
     let response = await fetch(url, {
       ...options,
@@ -71,11 +102,13 @@ class ApiClient {
       },
     });
 
-    // Se 401, tentar refresh automático
-    if (response.status === 401 && !endpoint.includes('/auth/refresh')) {
+    // Se 401 e NÃO é retry, tentar refresh UMA vez
+    if (response.status === 401 && !isRetry && !endpoint.includes('/auth/refresh')) {
+      console.log('[API] Got 401, attempting refresh...');
       const newToken = await this.refreshAccessToken();
+      
       if (newToken) {
-        // Retry com novo token
+        console.log('[API] Retrying request with new token...');
         response = await fetch(url, {
           ...options,
           credentials: 'include',
@@ -83,7 +116,10 @@ class ApiClient {
             ...this.getHeaders(),
             ...options.headers,
           },
-        });
+          isRetry: true, // Marcar como retry
+        } as any);
+      } else {
+        console.error('[API] Refresh failed, throwing 401');
       }
     }
 
@@ -103,6 +139,7 @@ class ApiClient {
     });
     
     this.setAccessToken(response.access_token);
+    this.resetRefreshAttempts(); // Reset counter on successful login
     return response;
   }
 

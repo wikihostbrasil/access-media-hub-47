@@ -10,6 +10,7 @@ interface User {
 
 // Singleton auth store so all hook consumers share the same state
 let initialized = false;
+let initInProgress = false; // Proteger contra múltiplas inicializações simultâneas
 let authUser: User | null = null;
 let authLoading = true;
 const listeners = new Set<(user: User | null, loading: boolean) => void>();
@@ -43,30 +44,41 @@ async function validateUserRole() {
 }
 
 async function initAuthOnce() {
-  if (initialized) return;
+  if (initialized || initInProgress) return;
+  
+  initInProgress = true;
   initialized = true;
+  
+  console.log('[Auth] Initializing authentication...');
 
   // NÃO usar localStorage - tentar refresh do servidor
   try {
+    console.log('[Auth] Attempting to refresh token from cookie...');
     const newToken = await apiClient.refreshAccessToken();
+    
     if (newToken) {
-      // Buscar dados do usuário do backend
+      console.log('[Auth] Token refreshed, fetching user profile...');
       const user = await apiClient.getProfile();
       authUser = user as User;
       authLoading = false;
       notify();
+      console.log('[Auth] User authenticated:', user.email);
       
       // Validar role periodicamente
       validateUserRole();
     } else {
+      console.log('[Auth] No valid refresh token, user must login');
       authUser = null;
       authLoading = false;
       notify();
     }
   } catch (error) {
+    console.error('[Auth] Initialization error:', error);
     authUser = null;
     authLoading = false;
     notify();
+  } finally {
+    initInProgress = false;
   }
 }
 
@@ -102,8 +114,10 @@ export function useApiAuth() {
       authUser = response.user as User;
       authLoading = false;
       notify();
+      console.log('[Auth] Sign in successful');
       return { error: null };
     } catch (error) {
+      console.error('[Auth] Sign in error:', error);
       return { error: error as Error };
     }
   };
