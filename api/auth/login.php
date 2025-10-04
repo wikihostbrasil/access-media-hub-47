@@ -62,8 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $insert_stmt->bindParam(":ip", $ip);
                     $insert_stmt->bindParam(":user_agent", $user_agent);
                     $insert_stmt->execute();
+                    $insert_success = $insert_stmt->rowCount() > 0;
+                    if ($insert_success) {
+                        error_log("[Login] Refresh token stored | User: {$user['email']} | Hash: " . substr($token_hash, 0, 16) . "...");
+                    } else {
+                        error_log("[Login] Insert refresh token returned 0 rows | User: {$user['email']}");
+                    }
                 } catch (Exception $e) {
-                    error_log("Failed to store refresh token: " . $e->getMessage());
+                    error_log("[Login] Failed to store refresh token: " . $e->getMessage());
                 }
                 
                 // Setar refresh token em cookie HttpOnly
